@@ -39,36 +39,6 @@ Design goals include:
  * detect corrupted inputs and incorrect inputs, instead of creating weird output
  * preserve leading/trailing zero's in numeric values
 
-## Drawbacks
-
-If you change the field spec, then all previous encoded values will no longer work. A suggested solution
-is to keep all versions of your Formpacker encoding available, and if decoding with the most recent one fails
-by throwing an error, then fall back to the next most recent, etc., until you either successfully decode an object
-or run out of possible field specs.
-
-Possible ways to change the field spec include:
-
- * adding/removing a field
- * changing the order in which you declare the fields
- * changing the name of a field
- * changing the maximum length of a string
- * changing the order of options in a multiple-choice
- * adding/removing a multiple-choice option
-
-## Bugs
-
-Numeric values do not support scientific notation. If you have a numeric value like "1.2e8", it will be
-rejected because "e" can not be encoded.
-
-## Value types
-
-Supported value types:
-
- * numeric
- * boolean
- * string
- * multiple choice
-
 ## Install
 
 ### npm
@@ -134,29 +104,56 @@ with an incorrect field spec, and a checksum of the field contents, so that it c
 
 The field types are encoded as follows, which may or may not make sense. Maybe better to read the code.
 
-### Boolean
+### Boolean: "bool"
 
 A base-2 value of either 0 or 1 is added into the bigint.
 
-### Multiple choice
+### Multiple choice: "multi"
 
 A base-N value i is added into the bigint, where N is the number of choices,
 and i is the index of the chosen choice.
 
-### Numbers
+### Numbers: "num"
 
 First a sign bit is encoded in the same manner as a boolean (true for negative),
 and then the integer part of the number is encoded, one decimal digit at a time, but as if it were a base-11 value.
 Then a base-11 digit "10" is encoded to signify the end of the integer part, and then the fractional part
 is encoded in the same way (base-10 representation, but in base-11 digits, followed by a base-11 "10").
 
-### Strings
+### Strings: "string"
 
 The string is encoded with utf-8.
 
 First the length of the string is encoded as a base-N value where N is 1 more than the specified
 maximum length of the string. And then each character of the utf-8 string is encoded as a base-256
 value.
+
+## Drawbacks
+
+If you change the field spec, then all previous encoded values will no longer work. A suggested solution
+is to keep all versions of your Formpacker encoding available, and if decoding with the most recent one fails
+by throwing an error, then fall back to the next most recent, etc., until you either successfully decode an object
+or run out of possible field specs.
+
+Possible ways to change the field spec include:
+
+ * adding/removing a field
+ * changing the order in which you declare the fields
+ * changing the name of a field
+ * changing the maximum length of a string
+ * changing the order of options in a multiple-choice
+ * adding/removing a multiple-choice option
+
+## Bugs
+
+Numeric values do not support scientific notation. If you have a numeric value like "1.2e8", it will be
+rejected because "e" can not be encoded.
+
+## Potential improvements
+
+Should the "string" and "num" field types use Huffman coding instead of the weird variable-base stuff?
+
+Should the length of a string be encoded as a "num" instead of a fixed-size value?
 
 ## Contact
 

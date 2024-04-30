@@ -77,7 +77,7 @@ and then:
 
     // Decode a string into an object.
     let newEmployee = f.decode(str);
-    console.log(newEmployee); // { height: 180.52, name: "Homer Simpson", admin: false, department: "tech", }
+    console.log(newEmployee); // { height: 180.52, name: "Homer Simpson", admin: false, department: "tech" }
 
 ## How it works
 

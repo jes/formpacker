@@ -2,8 +2,10 @@ class Formpack {
     name = null;
     nameHash = null;
     fields = [];
+    hasField = {};
 
     workNum = null;
+    sum = null;
     factor = null;
 
     base62Alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -26,8 +28,10 @@ class Formpack {
 
     _addDigits(str) {
         for (const ch of str) {
-            // TODO: throw exception if not numeric
-            this._add(parseInt(ch), 11);
+            let i = ch.charCodeAt(0) - '0'.charCodeAt(0);
+            if (i < 0 || i > 9)
+                throw new Error("illegal digit: " + ch);
+            this._add(i, 11);
         }
         this._add(10, 11); // 10 = terminator
     }
@@ -43,8 +47,15 @@ class Formpack {
         return str;
     }
 
+    _pushField(name, field) {
+        if (name in this.hasField)
+            throw new Error("duplicate field '" + name + "'");
+        this.hasField[name] = true;
+        this.fields.push(field);
+    }
+
     numField(name) {
-        this.fields.push({
+        this._pushField(name, {
             name: name,
             type: "num",
             add: function(value) {
@@ -74,14 +85,16 @@ class Formpack {
                 let sign = negative ? "-" : "";
                 intPart = this._removeDigits();
                 fracPart = this._removeDigits();
-                // TODO: suppress "." if fracPart is empty string
-                return sign + intPart + "." + fracPart;
+                if (fracPart.length == 0)
+                    return sign + intPart;
+                else
+                    return sign + intPart + "." + fracPart;
             },
         });
     }
 
     boolField(name) {
-        this.fields.push({
+        this._pushField(name, {
             name: name,
             type: "bool",
             add: function(value) {
@@ -102,13 +115,14 @@ class Formpack {
     }
 
     stringField(name, maxLen) {
-        this.fields.push({
+        this._pushField(name, {
             name: name,
             type: "string",
             maxLen: maxLen,
             add: function(value) {
                 value = this._encode_utf8(value);
-                // TODO: throw error if value.length > maxLen
+                if (value.length > maxLen)
+                    throw new Error("string length " + value.length + " exceeds maximum of " + maxLen);
                 this._add(value.length, maxLen+1);
                 for (let ch of value) {
                     this._add(ch.charCodeAt(0), 256);
@@ -127,7 +141,7 @@ class Formpack {
     }
 
     multiField(name, options) {
-        this.fields.push({
+        this._pushField(name, {
             name: name,
             type: "multi",
             options: options,
@@ -138,7 +152,7 @@ class Formpack {
                         return;
                     }
                 }
-                // TODO: throw error about unsupported value
+                throw new Error("option '" + value + "' unknown, expected one of [" + options.join(',') + "]");
             },
             remove: function() {
                 let i = this._remove(options.length);
@@ -148,15 +162,16 @@ class Formpack {
     }
 
     _add(val, base) {
+        this.sum = (this.sum + val) & 0xff;
         this.workNum += BigInt(val) * this.factor;
         this.factor *= BigInt(base);
-        console.log("add ", val, base, this.workNum);
     }
 
     _remove(base) {
-        let v = this.workNum % BigInt(base);
+        let val = Number(this.workNum % BigInt(base));
+        this.sum = (this.sum + val) & 0xff;
         this.workNum /= BigInt(base);
-        return Number(v);
+        return val;
     }
 
     _base62(num) {
@@ -171,15 +186,20 @@ class Formpack {
     encode(values) {
         this.workNum = BigInt(0);
         this.factor = BigInt(1);
+        this.sum = 0;
 
         this._add(this.nameHash, 256);
         for (let field of this.fields) {
-            // TODO: throw an error if field.name does not exist
             let fn = field.add.bind(this);
-            fn(values[field.name]);
+            try {
+                if (!field.name in values)
+                    throw new Error("'" + field.name + "' does not exist in input values");
+                fn(values[field.name]);
+            } catch (error) {
+                throw new Error("encoding field '" + field.name + "': " + error.message);
+            };
         }
-        this._add(this.nameHash, 256);
-        // TODO: make this an actual checksum of the contents?
+        this._add(this.sum, 256);
 
         this._add(1, 1);
 
@@ -190,33 +210,44 @@ class Formpack {
         let num = BigInt(0);
         for (let ch of str) {
             let i = this.base62Alphabet.indexOf(ch);
-            // TODO: throw error if i == -1: illegal char
+            if (i == -1)
+                throw new Error("illegal character in decoding base62: '" + ch + "'");
             num *= BigInt(62);
             num += BigInt(i);
         }
-        console.log(num);
         return num;
     }
 
     decode(str) {
         this.workNum = this._unbase62(str);
+        this.sum = 0;
 
-        let v = this._remove(256);
-        // TODO: throw error if val != this.nameHash
+        let hash = this._remove(256);
+        if (hash != this.nameHash)
+            throw new Error("incorrect nameHash (is this really a formpack of '" + this.name + "'?)");
 
         let values = {};
         for (let field of this.fields) {
             let fn = field.remove.bind(this);
-            values[field.name] = fn();
+            try {
+                values[field.name] = fn();
+            } catch (error) {
+                throw new Error("decoding field '" + field.name + "': " + error.message);
+            }
         }
 
-        v = this._remove(256);
-        // TODO: throw error if val != this.nameHash
+        // TODO: it would be good to be able to check the checksum first,
+        // otherwise we'll more likely give some 'decoding field ...' error on
+        // corrupted input, instead of 'incorrect checksum';
+        // or perhaps we should stash all (or just one of?) the decoding errors we
+        // encountered, and throw it only if the checksum is good
+        let expected = this.sum; // XXX: this._remove() modifies this.sum
+        let checksum = this._remove(256);
+        if (checksum != expected)
+            throw new Error("incorrect checksum (corrupted input?), got " + checksum + ", expected " + this.sum);
 
-        if (this.workNum != 1) {
-            // TODO: throw error
-            console.log(this.workNum);
-        }
+        if (this.workNum != 1)
+            throw new Error("excess value left over after decoding (mismatched field schema?)");
 
         return values;
     }

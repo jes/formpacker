@@ -12,6 +12,7 @@ Design goals include:
  * no special characters, because they are sometimes annoying to select by double-clicking, for example if they are detected as a word boundary
  * output should be reasonably as short as possible
  * detect corrupted inputs and incorrect inputs, instead of creating weird output
+ * preserve leading/trailing zero's in numeric values
 
 ## Drawbacks
 
@@ -37,8 +38,6 @@ Supported value types:
  * boolean
  * string
  * multiple choice
-
-Numeric values are encoded in a decimal representation, and leading/trailing zero's are preserved.
 
 ## Example
 

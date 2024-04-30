@@ -95,7 +95,8 @@ A base-2 value of either 0 or 1 is added into the bigint.
 
 ### Multiple choice
 
-A base-N value between 0 and N-1 is added into the bigint.
+A base-N value i is added into the bigint, where N is the number of choices,
+and i is the index of the chosen choice.
 
 ### Numbers
 

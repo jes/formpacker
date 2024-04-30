@@ -1,6 +1,6 @@
 class Formpacker {
-    name = null;
-    nameHash = null;
+    fieldSpecStr = null;
+    fieldSpecHash = null;
     fields = [];
     hasField = {};
 
@@ -10,9 +10,9 @@ class Formpacker {
 
     base62Alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    constructor(name) {
-        this.name = name;
-        this.nameHash = this._hashString(name);
+    constructor() {
+        this.fieldSpecStr = "";
+        this.fieldSpecHash = 0;
     }
 
     // based on https://stackoverflow.com/a/7616484
@@ -52,6 +52,17 @@ class Formpacker {
             throw new Error("duplicate field '" + name + "'");
         this.hasField[name] = true;
         this.fields.push(field);
+
+        // we construct a string representation of the field spec, and then hash
+        // it to create a 1-byte hash of the field spec, so that we have a good
+        // chance of detecting the problem if we try to decode data for the
+        // wrong field spec
+        this.fieldSpecStr += "," + name + ";" + field.type;
+        if (field.type == "string")
+            this.fieldSpecStr += "-" + field.maxLen;
+        else if (field.type == "multi")
+            this.fieldSpecStr += "+[" + field.options.join(',') + "]";
+        this.fieldSpecHash = this._hashString(this.fieldSpecStr);
     }
 
     numField(name) {
@@ -135,7 +146,7 @@ class Formpacker {
                     let chCode = this._remove(256);
                     str += String.fromCharCode(Number(chCode));
                 }
-                return str;
+                return this._decode_utf8(str);
             },
         });
     }
@@ -188,7 +199,7 @@ class Formpacker {
         this.factor = BigInt(1);
         this.sum = 0;
 
-        this._add(this.nameHash, 256);
+        this._add(this.fieldSpecHash, 256);
         for (let field of this.fields) {
             let fn = field.add.bind(this);
             try {
@@ -223,8 +234,8 @@ class Formpacker {
         this.sum = 0;
 
         let hash = this._remove(256);
-        if (hash != this.nameHash)
-            throw new Error("incorrect nameHash (is this really a formpack of '" + this.name + "'?)");
+        if (hash != this.fieldSpecHash)
+            throw new Error("incorrect fieldSpecHash (incorrect input?)");
 
         let values = {};
         for (let field of this.fields) {

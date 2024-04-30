@@ -179,6 +179,8 @@ class Formpacker {
     }
 
     _remove(base) {
+        if (this.workNum == 0)
+            throw new Error("ran out of working value");
         let val = Number(this.workNum % BigInt(base));
         this.sum = (this.sum + val) & 0xff;
         this.workNum /= BigInt(base);

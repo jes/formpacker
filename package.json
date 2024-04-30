@@ -1,0 +1,19 @@
+{
+  "name": "formpacker",
+  "version": "1.0.0",
+  "description": "Compact and copy-pastable encoding for form values",
+  "main": "formpacker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jes/formpacker.git"
+  },
+  "author": "James Stanley",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jes/formpacker/issues"
+  },
+  "homepage": "https://github.com/jes/formpacker#readme"
+}

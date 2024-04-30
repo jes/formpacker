@@ -1,4 +1,4 @@
-class Formpack {
+class Formpacker {
     name = null;
     nameHash = null;
     fields = [];
@@ -252,3 +252,8 @@ class Formpack {
         return values;
     }
 }
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
+    module.exports = Formpacker;
+else
+    window.Formpacker = Formpacker;

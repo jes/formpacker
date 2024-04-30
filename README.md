@@ -13,6 +13,13 @@ Design goals include:
  * output should be reasonably as short as possible
  * detect corrupted inputs and incorrect inputs, instead of creating weird output
 
+## Drawbacks
+
+If you change the field spec then all previous encoded values will no longer work. A suggested solution
+is to keep all versions of your Formpacker encoding available, and if decoding with the most recent one fails
+by throwing an error, then fall back to the next most recent, etc., until you either successfully decode an object
+or run out of possible field specs.
+
 ## Value types
 
 Supported value types:

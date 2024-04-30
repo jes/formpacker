@@ -55,6 +55,11 @@ Possible ways to change the field spec include:
  * changing the order of options in a multiple-choice
  * adding/removing a multiple-choice option
 
+## Bugs
+
+Numeric values do not support scientific notation. If you have a numeric value like "1.2e8", it will be
+rejected because "e" can not be encoded.
+
 ## Value types
 
 Supported value types:

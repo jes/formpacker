@@ -104,6 +104,14 @@ and then the integer part of the number is encoded, one decimal digit at a time,
 Then a base-11 digit "10" is encoded to signify the end of the integer part, and then the fractional part
 is encoded in the same way (base-10 representation, but in base-11 digits, followed by a base-11 "10").
 
+### Strings
+
+The string is encoded with utf-8.
+
+First the length of the string is encoded as a base-N value where N is 1 more than the specified
+maximum length of the string. And then each character of the utf-8 string is encoded as a base-256
+value.
+
 ## Contact
 
 Formpacker is created by James Stanley. You can email me on james@incoherency.co.uk or read my blog at https://incoherency.co.uk/

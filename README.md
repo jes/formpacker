@@ -2,6 +2,31 @@
 
 Formpacker creates compact copy-pastable representations of form values.
 
+You would show a Formpacker representation in a convenient copyable place near your form, and also have a box
+where people can paste in a Formpacker representation to populate the form.
+
+The output takes up substantially less space than base64 of JSON, at the cost of slightly more work in your
+code to define the field spec.
+
+As an example, let's take an object like:
+
+    {
+        height: 180.52,
+        name: "Homer Simpson",
+        admin: false,
+        department: "tech",
+    };
+
+base64 of JSON is:
+
+    eyJoZWlnaHQiOjE4MC41MiwibmFtZSI6IkhvbWVyIFNpbXBzb24iLCJhZG1pbiI6ZmFsc2UsImRlcGFydG1lbnQiOiJ0ZWNoIn0=
+
+Formpacker reduces this to:
+
+    vaICkJVC8LqhWSs7JK8Hyjv4Jj
+
+See below for example code.
+
 ## Design goals
 
 The intended purpose is for users to store & share form contents through any text-based channel (e.g.
@@ -39,7 +64,7 @@ Supported value types:
  * string
  * multiple choice
 
-## Example
+## Install
 
 ### npm
 
@@ -60,7 +85,7 @@ Load Formpacker with a script tag:
     </script>
     </body></html>
 
-### Usage
+## Usage
 
 Load Formpacker with either npm or a script tag, as above,
 and then:

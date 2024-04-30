@@ -1,6 +1,6 @@
 {
   "name": "formpacker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Compact and copy-pastable encoding for form values",
   "main": "formpacker.js",
   "scripts": {

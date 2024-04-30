@@ -15,10 +15,19 @@ Design goals include:
 
 ## Drawbacks
 
-If you change the field spec then all previous encoded values will no longer work. A suggested solution
+If you change the field spec, then all previous encoded values will no longer work. A suggested solution
 is to keep all versions of your Formpacker encoding available, and if decoding with the most recent one fails
 by throwing an error, then fall back to the next most recent, etc., until you either successfully decode an object
 or run out of possible field specs.
+
+Possible ways to change the field spec include:
+
+ * adding/removing a field
+ * changing the order in which you declare the fields
+ * changing the name of a field
+ * changing the maximum length of a string
+ * changing the order of options in a multiple-choice
+ * adding/removing a multiple-choice option
 
 ## Value types
 

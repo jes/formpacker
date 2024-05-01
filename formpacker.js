@@ -196,7 +196,7 @@ class Formpacker {
         return str;
     }
 
-    encode(values) {
+    pack(values) {
         this.workNum = BigInt(0);
         this.factor = BigInt(1);
         this.sum = 0;
@@ -231,7 +231,7 @@ class Formpacker {
         return num;
     }
 
-    decode(str) {
+    unpack(str) {
         this.workNum = this._unbase62(str);
         this.sum = 0;
 

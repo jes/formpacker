@@ -87,11 +87,11 @@ and then:
     };
 
     // Encode an object into a compact string representation.
-    let str = f.encode(employee);
+    let str = f.pack(employee);
     console.log(str); // vaICkJVC8LqhWSs7JK8Hyjv4Jj
 
     // Decode a string into an object.
-    let newEmployee = f.decode(str);
+    let newEmployee = f.unpack(str);
     console.log(newEmployee); // { height: 180.52, name: "Homer Simpson", admin: false, department: "tech" }
 
 ## How it works
